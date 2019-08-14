@@ -27,6 +27,8 @@ they diagnosed me with
 as someone with a diagnos
 im diagnos
 i'm diagnos
+im a diagnos
+i'm a diagnos
 i was .*doctor diagnos
 i've been .*doctor diagnos
 i have been .*doctor diagnos
@@ -39,8 +41,8 @@ i've only recently been diagnos
 i've only been diagnos
 .*doctor who diagnosed and medicated me
 .*doctor diagnosed me
-i have .*doctor diagnosed
-i am .*doctor diagnosed
+i have .*doctor diagnos
+i am .*doctor diagnos
 i was first diagnos
 i only got diagnos
 following my diagnos
@@ -104,7 +106,6 @@ i went to see a .*doctor was diagnosed
 i have been previously diagnosed
 i eventually got a diagnosis
 i finally got a diagnosis
-i am diagnosed _condition
 i ended up being diagnosed
 i was eventually diagnosed
 i had gotten the diagnosis
