@@ -27,9 +27,9 @@ they diagnosed me with
 as someone with a diagnos
 im diagnos
 i'm diagnos
-i was _doctor diagnos
-i've been _doctor diagnos
-i have been _doctor diagnos
+i was .*doctor diagnos
+i've been .*doctor diagnos
+i have been .*doctor diagnos
 i was just diagnos
 i've been recently diagnos
 i've recently been diagnos
@@ -37,10 +37,10 @@ i've just been diagnos
 i've been diagnos
 i've only recently been diagnos
 i've only been diagnos
-_doctor who diagnosed and medicated me
-_doctor diagnosed me
-i have _doctor diagnosed
-i am _doctor diagnosed
+.*doctor who diagnosed and medicated me
+.*doctor diagnosed me
+i have .*doctor diagnosed
+i am .*doctor diagnosed
 i was first diagnos
 i only got diagnos
 following my diagnos
@@ -65,27 +65,27 @@ he recently diagnosed me
 i had been diagnosed
 i have also been diagnosed
 i've been depressed and diagnosed
-i got a _doctor diagnos
-i got _condition diagnos
-i got a _condition diagnos
-my _condition diagnosis
-i've got a _condition diagnosis
-i have a _condition diagnosis
-i've a _condition diagnosis
+i got a .*doctor diagnos
+i got .*condition diagnos
+i got a .*condition diagnos
+my .*condition diagnosis
+i've got a .*condition diagnosis
+i have a .*condition diagnosis
+i've a .*condition diagnosis
 my official diagnosis of
 since being diagnosed i've
 since diagnosed i've
 i was also diagnosed
-_doctor has diagnosed my
+.*doctor has diagnosed my
 i have only recently been diagnos
 i have recently been diagnos
 only recently have i been diagnos
-i've been seeing a _doctor and been diagnos
-i am diagnosed _condition
+i've been seeing a .*doctor and been diagnos
+i am diagnosed .*condition
 i've suffered with diagnosed
-i have diagnosed _condition
-i also have diagnosed _condition
-my _condition diagnosis
+i have diagnosed .*condition
+i also have diagnosed .*condition
+my .*condition diagnosis
 i was then diagnosed with
 i was diagnosed with
 i'm recently diagnosed
@@ -94,13 +94,13 @@ i've been diagnosed
 i was very recently diagnosed
 i'm very recently diagnosed
 i got my diagnosis of
-my _condition diagnosis
+my .*condition diagnosis
 i was ultimately diagnosed
-my only _doctor diagnosis
-my _doctor diagnosis
+my only .*doctor diagnosis
+my .*doctor diagnosis
 depressive episode that got me diagnosed
-i went to see a _doctor, was diagnosed
-i went to see a _doctor was diagnosed
+i went to see a .*doctor, was diagnosed
+i went to see a .*doctor was diagnosed
 i have been previously diagnosed
 i eventually got a diagnosis
 i finally got a diagnosis
@@ -114,43 +114,43 @@ i have been diagnosed
 i was originally diagnosed
 i am recently diagnosed
 i have had diagnosed
-my recently diagnosed _condition
-i have a couple _condition diagnos
-i have a _condition diagnos
+my recently diagnosed .*condition
+i have a couple .*condition diagnos
+i have a .*condition diagnos
 i've since been diagnosed
-i have several other _condition diagnosed
-i have many other _condition diagnosed
-i have several _condition diagnosed
-i have many _condition diagnosed
+i have several other .*condition diagnosed
+i have many other .*condition diagnosed
+i have several .*condition diagnosed
+i have many .*condition diagnosed
 i had already been diagnosed
 i had been diagnosed
-i got _condition diagnosis
-i had a _doctor diagnose me
-i even went to a _doctor and got diagnosed
-i even went to the _doctor and got diagnosed
-i went to a _doctor and got diagnosed
-i went to the _doctor and got diagnosed
-i have been _condition, with a diagnosis
-i have been _condition with a diagnosis
-i have _condition, diagnosed
-i have _condition diagnosed
-my _doctor has diagnosed me
+i got .*condition diagnosis
+i had a .*doctor diagnose me
+i even went to a .*doctor and got diagnosed
+i even went to the .*doctor and got diagnosed
+i went to a .*doctor and got diagnosed
+i went to the .*doctor and got diagnosed
+i have been .*condition, with a diagnosis
+i have been .*condition with a diagnosis
+i have .*condition, diagnosed
+i have .*condition diagnosed
+my .*doctor has diagnosed me
 i've been struggling with my diagnosis
-i have _condition, which was only recently diagnosed
-i have _condition, which was recently diagnosed
-i have _condition which was only recently diagnosed
-i have _condition which was recently diagnosed
-i went to the _doctor, got diagnosed
-i went to the _doctor got diagnosed
-i went to _doctor, got diagnosed
-i went to _doctor got diagnosed
-i went to the _doctor, get diagnosed
-i went to the _doctor get diagnosed
-i went to _doctor, get diagnosed
-i went to _doctor get diagnosed
-i saw a _doctor after being diagnosed
-led my _doctor to my current diagnosis
-led my _doctor to my diagnosis
+i have .*condition, which was only recently diagnosed
+i have .*condition, which was recently diagnosed
+i have .*condition which was only recently diagnosed
+i have .*condition which was recently diagnosed
+i went to the .*doctor, got diagnosed
+i went to the .*doctor got diagnosed
+i went to .*doctor, got diagnosed
+i went to .*doctor got diagnosed
+i went to the .*doctor, get diagnosed
+i went to the .*doctor get diagnosed
+i went to .*doctor, get diagnosed
+i went to .*doctor get diagnosed
+i saw a .*doctor after being diagnosed
+led my .*doctor to my current diagnosis
+led my .*doctor to my diagnosis
 i've tried since my diagnosis
 i've tried since being diagnosed
 i've tried after my diagnosis

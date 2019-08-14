@@ -1,5 +1,6 @@
 import json
 import argparse
+import re
 import logging
 
 
@@ -28,7 +29,7 @@ class SchizophreniaCandidates:
 
         # Create handlers
         stdout_handler = logging.StreamHandler()
-        file_handler = logging.FileHandler(output_file)
+        file_handler = logging.FileHandler(output_file, encoding='utf-8')
 
         # Create formatters and add it to handlers
         stdout_handler.setFormatter(logging.Formatter('%(message)s'))
@@ -52,20 +53,20 @@ class SchizophreniaCandidates:
 
     @staticmethod
     def filter_in_self_terms(tweet_text):
-        for me_term in ['I ', 'i ', 'I\'m', 'i\'m', 'im', 'i\'ve', 'ive', 'me']:
-            if me_term not in tweet_text:
+        for self_term in ['I ', 'i ', 'I\'m', 'i\'m', 'im', 'i\'ve', 'ive', 'me']:
+            if self_term not in tweet_text:
                 return False
         return True
 
     def contains_positive_terms(self, tweet_text):
         for positive_term in self._positive_terms:
-            if positive_term in tweet_text:
+            if re.findall(positive_term, tweet_text):
                 return True
         return False
 
     def contains_negative_terms(self, tweet_text):
         for negative_term in self._negative_terms:
-            if negative_term in tweet_text:
+            if re.findall(negative_term, tweet_text):
                 return True
         return False
 
@@ -86,6 +87,7 @@ class SchizophreniaCandidates:
                         continue
 
                     tweet_text = tweet['extended_tweet']['full_text'] if 'extended_tweet' in tweet else tweet['text']
+                    tweet_text = tweet_text.lower()
 
                     if self.filter_out_adds(tweet_text):
                         continue

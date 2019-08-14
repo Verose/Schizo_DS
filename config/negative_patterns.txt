@@ -6,7 +6,7 @@ chooses not to be diagnos
 never clinically diagnos
 self diagnos
 her recent cancer diagnos
-_ref currently doesn't have a diagnos
+.*ref currently doesn't have a diagnos
 what is your diagnos
 until i get diagnos
 i haven't been diagnos
@@ -30,19 +30,19 @@ wasn't diagnos
 wasn't clinically diagnos
 wasn't formally diagnos
 i'm not a diagnos
-_ref was then diagnos
-_ref is diagnos
-_ref has recently been diagnos
-_ref has been recently dianos
-_ref was just dianos
-_ref has been dianos
+.*ref was then diagnos
+.*ref is diagnos
+.*ref has recently been diagnos
+.*ref has been recently dianos
+.*ref was just dianos
+.*ref has been dianos
 he's diagnos
 she's diagnos
-_ref does have diagnos
-_ref been diagnos
-_ref has been diagnos
-_ref being dianos
-_ref got diagnos
+.*ref does have diagnos
+.*ref been diagnos
+.*ref has been diagnos
+.*ref being dianos
+.*ref got diagnos
 no formal diagnos
 not received any diagnos
 not looking for a diagnos
@@ -70,5 +70,5 @@ you can't diagnose me
 you can't make a diagnosis
 never actually diagnosed
 never been officially diagnos
-i almost wish i had a _condition diagnosis
+i almost wish i had a .*condition diagnosis
 nor am i diagnos
