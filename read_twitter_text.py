@@ -1,7 +1,8 @@
-import json
 import argparse
-import re
+import json
 import logging
+import re
+import time
 
 
 def load_positive_patterns():
@@ -23,6 +24,7 @@ class SchizophreniaCandidates:
         self._input_files = input_files
         self._output_file = output_file
         self._logger = logging.getLogger('schizo_db')
+        self._users = {}
 
         # Setup logger
         self._logger.setLevel(logging.DEBUG)
@@ -71,6 +73,8 @@ class SchizophreniaCandidates:
         return False
 
     def find_schizo_candidates(self, high_precision=False):
+        users = []
+
         for file in self._input_files:
             tweet_counter = 0
 
@@ -82,10 +86,10 @@ class SchizophreniaCandidates:
                         continue
 
                     tweet = json.loads(line)
-                    # prefer 'full_text', otherwise take 'text' minus the link at the end
                     if self.filter_out_retweets(tweet):
                         continue
 
+                    # prefer 'full_text', otherwise take 'text' minus the link at the end
                     tweet_text = tweet['extended_tweet']['full_text'] if 'extended_tweet' in tweet else tweet['text']
                     tweet_text = tweet_text.lower()
 
@@ -103,13 +107,32 @@ class SchizophreniaCandidates:
                         if 'diagnos' not in tweet_text:
                             continue
 
+                    user_id = tweet['user']['id']
+                    created_at = tweet['created_at']
+                    created_at = time.mktime(time.strptime(created_at, "%a %b %d %H:%M:%S +0000 %Y"))
+                    hashtags = tweet['entities']['hashtags']
+                    hashtags = [hashtag['text'] for hashtag in hashtags]
+
+                    if user_id not in self._users:
+                        self._users[user_id] = {
+                            'posts': [],
+                            'hashtags': []
+                        }
+                    self._users[user_id]['posts'].append((created_at, tweet_text))
+                    self._users[user_id]['hashtags'].extend(hashtags)
+
                     self._logger.info(tweet_text)
                     self._logger.info('-----------------------------------------------------------------')
                     tweet_counter += 1
+                    users += [user_id]
             self._logger.info('*****************************************************************')
             self._logger.info('Found {counter} schizophrenia candidates in {file}'.format(
                 counter=tweet_counter, file=file))
             self._logger.info('*****************************************************************')
+        self._logger.info('Our of {} users, there are {} unique'.format(len(users), len(set(users))))
+
+        with open("candidates.json", 'w', encoding='utf-8') as out:
+            json.dump(self._users, out)
 
 
 if __name__ == "__main__":
