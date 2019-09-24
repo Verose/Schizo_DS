@@ -1,5 +1,6 @@
 import json
 import os
+import re
 from argparse import ArgumentParser
 
 import tweepy
@@ -17,7 +18,7 @@ class UserTweetFetcher:
 
     def create_api(self):
         with open(self._config_path) as f:
-            oauth_config = yaml.load(f)
+            oauth_config = yaml.load(f, Loader=yaml.FullLoader)
         info = oauth_config['profiles']['user']
         info = info[list(info.keys())[0]]
         consumer_key = info['consumer_key']
@@ -59,11 +60,22 @@ class UserTweetFetcher:
                 self.get_user_tweets(user_id)
 
     def _get_user_timeline(self, user_id, count, max_id=None):
+        """
+        Use Twitter api to receive a users timeline posts.
+        In addition to these input parameters, since we're only interested in posts, the api is used with:
+        exclude_replies: when set to True, prevents replies from appearing in the returned timeline
+        include_rts: when set to False, the timeline will strip any native retweets
+        :param user_id: Twitter id of the user
+        :param count: maximum posts
+        :param max_id: maximum post id number when using the api several times on the same user
+        :return: list of tweets from user timeline
+        """
         try:
             if max_id:
-                tweets = self._api.user_timeline(user_id=user_id, count=count, max_id=max_id)
+                tweets = self._api.user_timeline(user_id=user_id, count=count, exclude_replies=True, include_rts=False,
+                                                 max_id=max_id)
             else:
-                tweets = self._api.user_timeline(user_id=user_id, count=count)
+                tweets = self._api.user_timeline(user_id=user_id, count=count, exclude_replies=True, include_rts=False)
         except tweepy.TweepError:
             tweets = None
         return tweets
@@ -75,9 +87,10 @@ class UserTweetFetcher:
         """
         all_tweets = []
         new_tweets = self._get_user_timeline(user_id=user_id, count=self._num_tweets)
+        self.init_new_user(user_id)
+
         if not new_tweets:
             print("Skipping user {} which probably has protected tweets".format(user_id))
-            self.init_new_user(user_id)
             return
 
         # keep grabbing tweets until there are no tweets left to grab
@@ -90,16 +103,20 @@ class UserTweetFetcher:
                 break
 
         for tweet in all_tweets:
-            # prefer 'full_text', otherwise take 'text' minus the link at the end
-            tweet_text = tweet.text.lower()
-            created_at = tweet.created_at.timestamp()
+            # skip non-English tweets
+            if tweet.lang != 'en':
+                continue
+
+            # remove the url at the end and convert to lowercase
+            tweet_text = re.sub(r"http\S+$", "", tweet.text.lower())
             hashtags = tweet.entities['hashtags']
             hashtags = [hashtag['text'] for hashtag in hashtags]
-            self.init_new_user(user_id)
-            self._users_tweets[user_id]['posts'].append((created_at, tweet_text))
+            if tweet_text:
+                created_at = tweet.created_at.timestamp()
+                self._users_tweets[user_id]['posts'].append((created_at, tweet_text))
             self._users_tweets[user_id]['hashtags'].extend(hashtags)
 
-        print('Finished with user {} with {} tweets'.format(user_id, len(all_tweets)))
+        print('Finished with user {} with {} tweets'.format(user_id, len(self._users_tweets[user_id]['posts'])))
 
     def init_new_user(self, user_id):
         if user_id not in self._users_tweets:
@@ -111,11 +128,16 @@ class UserTweetFetcher:
 
 if __name__ == '__main__':
     parser = ArgumentParser(prefix_chars='--')
-    parser.add_argument('--users_path', type=str, default='candidates.json', help='Optional users path file')
+    parser.add_argument('--users_path', type=str, default='candidates.json', help='Optional users path')
+    parser.add_argument('--save_path', type=str, default='candidates_timeline.json', help='Optional save path')
+    parser.add_argument('--oauth_config', type=str, default='config/oauth_config', help='Optional config file')
     options = parser.parse_args()
 
-    tweet_fetcher = UserTweetFetcher(config_path='config/oauth_config', save_path='candidates_timeline.json',
-                                     users_path=options.users_path)
+    tweet_fetcher = UserTweetFetcher(
+        config_path=options.oauth_config,
+        save_path=options.save_path,
+        users_path=options.users_path
+    )
     tweet_fetcher.create_api()
 
     try:
@@ -131,5 +153,3 @@ if __name__ == '__main__':
 # 'parse_list', 'place', 'possibly_sensitive', 'retweet', 'retweet_count', 'retweeted', 'retweets', 'source',
 # 'source_url', 'text', 'truncated', 'user']
 # print(dir(user_timeline[0]))
-
-
