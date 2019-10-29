@@ -85,7 +85,10 @@ class SchizophreniaCandidates:
                     if 'EOFError' in line:
                         continue
 
-                    tweet = json.loads(line)
+                    try:
+                        tweet = json.loads(line, encoding='utf-8')
+                    except json.decoder.JSONDecodeError:
+                        continue
                     if self.filter_out_retweets(tweet):
                         continue
 
