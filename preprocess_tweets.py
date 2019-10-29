@@ -22,6 +22,8 @@ import re
 
 
 # https://github.com/s/preprocessor/blob/master/preprocessor/
+
+
 class Patterns:
     URL_PATTERN = re.compile(r"http\S+")
     HASHTAG_PATTERN = re.compile(r"#\w*")
@@ -38,6 +40,7 @@ class Patterns:
 
     SMILEYS_PATTERN = re.compile(r"(?:X|:|;|=)(?:-)?(?:\)|\(|O|D|P|S){1,}", re.IGNORECASE)
     NUMBERS_PATTERN = re.compile(r"(^|\s)(\-?\d+(?:\.\d)*|\d+)")
+    PUNCTUATION_PATTERN = r"[:()-/,.;?!&$]+\ *"
 
     @staticmethod
     def preprocess_urls(tweet_string, repl):
@@ -72,16 +75,21 @@ class Patterns:
         return tweet_string.encode('ascii', 'ignore').decode('ascii').lower()
 
     @staticmethod
+    def _preprocess_punctuation(tweet_string, repl):
+        return re.sub(Patterns.PUNCTUATION_PATTERN, " ", tweet_string)
+
+    @staticmethod
     def preprocess(tweet_string):
         method_list = [func for func in dir(Patterns) if callable(getattr(Patterns, func))
-                       and not func.startswith("__") and func != 'preprocess']
+                       and not func.startswith("_") and func != 'preprocess']
 
         for method in method_list:
             static_method = Patterns.__getattribute__(Patterns, method)
             actual_method = static_method.__get__(object)
             tweet_string = actual_method(tweet_string, "")
 
+        tweet_string = Patterns._preprocess_punctuation(tweet_string, "")
         return tweet_string
 
 
-print(Patterns.preprocess("bla bla hehe https://bla test :) numbers 1948"))
+print(Patterns.preprocess("bla/bla (he:he) https://bla test :) numbers 1948 so.another test. lol,    bla. fin!"))
