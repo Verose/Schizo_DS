@@ -1,6 +1,5 @@
 import json
 import os
-import re
 from argparse import ArgumentParser
 
 import tweepy
@@ -73,9 +72,10 @@ class UserTweetFetcher:
         try:
             if max_id:
                 tweets = self._api.user_timeline(user_id=user_id, count=count, exclude_replies=True, include_rts=False,
-                                                 max_id=max_id)
+                                                 tweet_mode="extended", max_id=max_id)
             else:
-                tweets = self._api.user_timeline(user_id=user_id, count=count, exclude_replies=True, include_rts=False)
+                tweets = self._api.user_timeline(user_id=user_id, count=count, exclude_replies=True, include_rts=False,
+                                                 tweet_mode="extended")
         except tweepy.TweepError:
             tweets = None
         return tweets
@@ -86,8 +86,8 @@ class UserTweetFetcher:
         :return: list of user tweets info
         """
         all_tweets = []
-        new_tweets = self._get_user_timeline(user_id=user_id, count=self._num_tweets)
         self.init_new_user(user_id)
+        new_tweets = self._get_user_timeline(user_id=user_id, count=self._num_tweets)
 
         if not new_tweets:
             print("Skipping user {} which probably has protected tweets".format(user_id))
@@ -107,8 +107,7 @@ class UserTweetFetcher:
             if tweet.lang != 'en':
                 continue
 
-            # remove the url at the end and convert to lowercase
-            tweet_text = re.sub(r"http\S+$", "", tweet.text.lower())
+            tweet_text = tweet.full_text.lower()
             hashtags = tweet.entities['hashtags']
             hashtags = [hashtag['text'] for hashtag in hashtags]
             if tweet_text:
@@ -128,8 +127,10 @@ class UserTweetFetcher:
 
 if __name__ == '__main__':
     parser = ArgumentParser(prefix_chars='--')
-    parser.add_argument('--users_path', type=str, default='candidates.json', help='Optional users path')
-    parser.add_argument('--save_path', type=str, default='candidates_timeline.json', help='Optional save path')
+    parser.add_argument('--users_path', type=str, default='candidates.json',
+                        help='Optional users path. This is the json file containing diagnosed schizophrenia users')
+    parser.add_argument('--save_path', type=str, default='candidates_timeline.json',
+                        help='Optional save path. If this file already exists it is reloaded to avoid unnecessary work')
     parser.add_argument('--oauth_config', type=str, default='config/oauth_config', help='Optional config file')
     options = parser.parse_args()
 
