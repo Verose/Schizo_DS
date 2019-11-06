@@ -132,7 +132,7 @@ class SchizophreniaCandidates:
             self._logger.info('Found {counter} schizophrenia candidates in {file}'.format(
                 counter=tweet_counter, file=file))
             self._logger.info('*****************************************************************')
-        self._logger.info('Our of {} users, there are {} unique'.format(len(users), len(set(users))))
+        self._logger.info('Out of {} users, there are {} unique'.format(len(users), len(set(users))))
 
         with open("candidates.json", 'w', encoding='utf-8') as out:
             json.dump(self._users, out)
