@@ -18,7 +18,7 @@ def load_negative_patterns():
 
 
 class SchizophreniaCandidates:
-    def __init__(self, positive_terms, negative_terms, input_files, output_file):
+    def __init__(self, positive_terms, negative_terms, input_files, log_file, output_file):
         self._positive_terms = positive_terms
         self._negative_terms = negative_terms
         self._input_files = input_files
@@ -31,7 +31,7 @@ class SchizophreniaCandidates:
 
         # Create handlers
         stdout_handler = logging.StreamHandler()
-        file_handler = logging.FileHandler(output_file, encoding='utf-8')
+        file_handler = logging.FileHandler(log_file, encoding='utf-8')
 
         # Create formatters and add it to handlers
         stdout_handler.setFormatter(logging.Formatter('%(message)s'))
@@ -134,14 +134,15 @@ class SchizophreniaCandidates:
             self._logger.info('*****************************************************************')
         self._logger.info('Out of {} users, there are {} unique'.format(len(users), len(set(users))))
 
-        with open("candidates.json", 'w', encoding='utf-8') as out:
+        with open(self._output_file, 'w', encoding='utf-8') as out:
             json.dump(self._users, out)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prefix_chars='--')
     parser.add_argument('--input', type=str, nargs='+', required=True, help='Input files to process')
-    parser.add_argument('--output', type=str, default='candidates.txt', help='Optional output file')
+    parser.add_argument('--log', type=str, default='candidates.txt', help='Optional log file')
+    parser.add_argument('--output', type=str, default='candidates.json', help='Optional output file')
     parser.add_argument('-hp', '--high_precision', action='store_true', default=False,
                         help='Set this to perform a search for candidates using SMHD high precision patterns.')
     options = parser.parse_args()
@@ -149,5 +150,5 @@ if __name__ == "__main__":
     positive = load_positive_patterns()
     negative = load_negative_patterns()
 
-    candidates = SchizophreniaCandidates(positive, negative, options.input, options.output)
+    candidates = SchizophreniaCandidates(positive, negative, options.input, options.log, options.output)
     candidates.find_schizo_candidates(options.high_precision)
