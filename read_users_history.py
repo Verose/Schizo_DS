@@ -47,6 +47,7 @@ class UserTweetFetcher:
 
     def save_users(self):
         with open(self._save_path, 'w', encoding='utf-8') as out:
+            print('Saving {} user entries'.format(len(self._users_tweets)))
             json.dump(self._users_tweets, out)
 
     def get_tweets(self):
@@ -82,34 +83,40 @@ class UserTweetFetcher:
 
     def get_user_tweets(self, user_id):
         """
-        extract all tweets from a user's timeline in batches of size self._num_tweets from most recent to oldest
+        extract a user's recent timeline (200 recent tweets)
         :return: list of user tweets info
         """
-        all_tweets = []
-        self.init_new_user(user_id)
+        english_tweets = []
         new_tweets = self._get_user_timeline(user_id=user_id, count=self._num_tweets)
 
         if not new_tweets:
             print("Skipping user {} which probably has protected tweets".format(user_id))
             return
 
-        # keep grabbing tweets until there are no tweets left to grab
-        while len(new_tweets) > 0:
-            all_tweets.extend(new_tweets)
-            oldest = all_tweets[-1].id - 1
-            # all subsequent requests use the max_id param to prevent duplicates
-            new_tweets = self._get_user_timeline(user_id=user_id, count=self._num_tweets, max_id=oldest)
-            if not new_tweets:
+        # keep grabbing tweets until we have enough
+        while len(new_tweets) > 0 and len(english_tweets) < self._num_tweets:
+            # skip non-English tweets
+            english_tweets.extend([tweet for tweet in new_tweets if tweet.lang == 'en'])
+
+            # we have enough good tweets, no need for more api calls
+            if len(english_tweets) >= self._num_tweets:
                 break
 
-        for tweet in all_tweets:
-            # skip non-English tweets
-            if tweet.lang != 'en':
-                continue
+            # all subsequent requests use the max_id param to prevent duplicates
+            oldest = new_tweets[-1].id - 1
+            new_tweets = self._get_user_timeline(user_id=user_id, count=self._num_tweets, max_id=oldest)
 
+        if len(english_tweets) < self._num_tweets:
+            print("Skipping user {user_id} which has {tweet_count}/{tweet_threshold} valid tweets".format(
+                user_id=user_id, tweet_count=len(english_tweets), tweet_threshold=self._num_tweets))
+            return
+
+        self.init_new_user(user_id)
+
+        for tweet in english_tweets[:self._num_tweets]:
             tweet_text = tweet.full_text.lower()
-            hashtags = tweet.entities['hashtags']
-            hashtags = [hashtag['text'] for hashtag in hashtags]
+            hashtags = [hashtag['text'] for hashtag in tweet.entities['hashtags']]
+
             if tweet_text:
                 created_at = tweet.created_at.timestamp()
                 self._users_tweets[user_id]['posts'].append((created_at, tweet_text))
@@ -146,11 +153,3 @@ if __name__ == '__main__':
     finally:
         tweet_fetcher.save_users()
         print("Finished")
-
-
-# '__weakref__', '_api', '_json', 'author', 'contributors', 'coordinates', 'created_at', 'destroy', 'entities',
-# 'favorite', 'favorite_count', 'favorited', 'geo', 'id', 'id_str', 'in_reply_to_screen_name', 'in_reply_to_status_id',
-# 'in_reply_to_status_id_str', 'in_reply_to_user_id', 'in_reply_to_user_id_str', 'is_quote_status', 'lang', 'parse',
-# 'parse_list', 'place', 'possibly_sensitive', 'retweet', 'retweet_count', 'retweeted', 'retweets', 'source',
-# 'source_url', 'text', 'truncated', 'user']
-# print(dir(user_timeline[0]))
