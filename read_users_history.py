@@ -7,9 +7,9 @@ import yaml
 
 
 class UserTweetFetcher:
-    def __init__(self, config_path, save_path, users_path):
+    def __init__(self, config_path, save_path, users_path, num_tweets):
         self._api = None
-        self._num_tweets = 200
+        self._num_tweets = num_tweets
         self._config_path = config_path
         self._save_path = save_path
         self._users_path = users_path
@@ -139,12 +139,14 @@ if __name__ == '__main__':
     parser.add_argument('--save_path', type=str, default='candidates_timeline.json',
                         help='Optional save path. If this file already exists it is reloaded to avoid unnecessary work')
     parser.add_argument('--oauth_config', type=str, default='config/oauth_config', help='Optional config file')
+    parser.add_argument('--num_tweets', type=int, default=200, help='Minimum number of tweets per user')
     options = parser.parse_args()
 
     tweet_fetcher = UserTweetFetcher(
         config_path=options.oauth_config,
         save_path=options.save_path,
-        users_path=options.users_path
+        users_path=options.users_path,
+        num_tweets=options.num_tweets
     )
     tweet_fetcher.create_api()
 
