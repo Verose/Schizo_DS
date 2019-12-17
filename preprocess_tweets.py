@@ -26,7 +26,7 @@ import re
 
 class Patterns:
     URL_PATTERN = re.compile(r"http\S+")
-    HASHTAG_PATTERN = re.compile(r"#\w*")
+    HASHTAG_PATTERN = re.compile(r"#")
     MENTION_PATTERN = re.compile(r"@\w*")
     RESERVED_WORDS_PATTERN = re.compile(r"^(RT|FAV)")
 
