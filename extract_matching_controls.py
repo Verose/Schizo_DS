@@ -70,6 +70,7 @@ if __name__ == "__main__":
         similarities = cosine_similarity(schizo_vec, tfidf_controls)
         sorted_similarities = similarities[0].argsort()[:-args.matching_controls_cnt: -1]
         # todo: filter by a minimum cosine score and delete schizos with not enough controls
+        # todo: filter out schizophrenics posts containing negative words
         sorted_controls_posts = [controls_dict[ind] for ind in sorted_similarities]
         schizo_user = schizos_dict[schizo_ind]
         insert_user_to_output_json(schizo_user[0], 'schizophrenia', schizo_user[1], output_json)
