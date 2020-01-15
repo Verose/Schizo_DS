@@ -1,5 +1,7 @@
 import argparse
 import json
+from multiprocessing import Manager
+from multiprocessing.pool import Pool
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -19,39 +21,60 @@ def insert_user_to_output_json(user_id, label, posts, out_json):
     }
 
 
-def read_group_posts(history_file, group_dict):
+posts = []
+group_dict = []
+
+
+def init(*args):
+    global posts
+    global group_dict
+    posts = args[0]
+    group_dict = args[1]
+
+
+def get_posts(*args):
+    index, (user_id, user_history) = args[0]
+    user_posts = [p[1] for p in user_history["posts"]]
+    user_preprocessed_posts = [Patterns.preprocess(post) for post in user_posts]
+    group_dict[index] = (user_id, user_preprocessed_posts)
+    posts.append('\n'.join([p.strip() for p in user_preprocessed_posts]))
+
+
+def read_group_posts(history_files, group_dict):
     """
     Each user is represented by a list of strings which are their posts.
     The posts go through preprocessing.
-    :param history_file: path to group Twitter history file
+    :param history_files: a list of paths to group Twitter history file
     :param group_dict: group dictionary to insert the preprocessed posts to
     :return: List of lists representing a list of user posts
     """
-    with open(history_file) as f:
-        hist = json.load(f)
+    posts = manager.list()
+    pool = Pool(processes=n_processes, initializer=init, initargs=(posts, group_dict))
 
-    posts = []
-    for index, (user_id, user_history) in enumerate(hist.items()):
-        user_posts = [p[1] for p in user_history["posts"]]
-        user_preprocessed_posts = [Patterns.preprocess(post) for post in user_posts]
-        group_dict[index] = (user_id, user_preprocessed_posts)
-        posts.append('\n'.join([p.strip() for p in user_preprocessed_posts]))
+    for hist_file in history_files:
+        with open(hist_file) as f:
+            hist = json.load(f)
+        pool.map(get_posts, enumerate(hist.items()))
+    pool.close()
     return posts
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prefix_chars='--')
-    parser.add_argument('--schizos', type=str, required=True, help='Schizophrenics Twitter history file')
-    parser.add_argument('--controls', type=str, required=True, help='Controls Twitter history file')
+    parser.add_argument('--schizos', type=str, nargs='+', required=True, help='Schizophrenics Twitter history file')
+    parser.add_argument('--controls', type=str, nargs='+', required=True, help='Controls Twitter history file')
+    parser.add_argument('--n_processes', type=int, default=1, help='How many processes to use for runtime speedup')
     parser.add_argument('--matching_controls_cnt', type=int, default=5, help='How many controls to match each schizo')
     args = parser.parse_args()
 
+    n_processes = args.n_processes
     controls_history_file = args.controls
     schizos_history_file = args.schizos
 
     all_hist = []
-    controls_dict = {}
-    schizos_dict = {}
+    manager = Manager()
+    controls_dict = manager.dict()
+    schizos_dict = manager.dict()
 
     controls_hist = read_group_posts(controls_history_file, controls_dict)
     schizos_hist = read_group_posts(schizos_history_file, schizos_dict)
