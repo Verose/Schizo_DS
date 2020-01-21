@@ -1,26 +1,14 @@
 import argparse
 import json
 import logging
-import re
 import time
 
-
-def load_positive_patterns():
-    with open('config/positive_patterns.txt') as f:
-        positive_patterns = f.read().splitlines()
-    return positive_patterns
-
-
-def load_negative_patterns():
-    with open('config/negative_patterns.txt') as f:
-        negative_patterns = f.read().splitlines()
-    return negative_patterns
+from terms_sentiment import TermSentiment
 
 
 class SchizophreniaCandidates:
-    def __init__(self, positive_terms, negative_terms, input_files, log_file, output_file):
-        self._positive_terms = positive_terms
-        self._negative_terms = negative_terms
+    def __init__(self, input_files, log_file, output_file):
+        self._sentiment = TermSentiment()
         self._input_files = input_files
         self._output_file = output_file
         self._logger = logging.getLogger('schizo_db')
@@ -60,18 +48,6 @@ class SchizophreniaCandidates:
                 return False
         return True
 
-    def contains_positive_terms(self, tweet_text):
-        for positive_term in self._positive_terms:
-            if re.findall(positive_term, tweet_text):
-                return True
-        return False
-
-    def contains_negative_terms(self, tweet_text):
-        for negative_term in self._negative_terms:
-            if re.findall(negative_term, tweet_text):
-                return True
-        return False
-
     def find_schizo_candidates(self, high_precision=False):
         users = []
 
@@ -100,9 +76,9 @@ class SchizophreniaCandidates:
                         continue
 
                     if high_precision:
-                        if not self.contains_positive_terms(tweet_text):
+                        if not self._sentiment.contains_positive_terms(tweet_text):
                             continue
-                        if self.contains_negative_terms(tweet_text):
+                        if self._sentiment.contains_negative_terms(tweet_text):
                             continue
                     else:
                         if self.filter_in_self_terms(tweet_text):
@@ -147,8 +123,5 @@ if __name__ == "__main__":
                         help='Set this to perform a search for candidates using SMHD high precision patterns.')
     options = parser.parse_args()
 
-    positive = load_positive_patterns()
-    negative = load_negative_patterns()
-
-    candidates = SchizophreniaCandidates(positive, negative, options.input, options.log, options.output)
+    candidates = SchizophreniaCandidates(options.input, options.log, options.output)
     candidates.find_schizo_candidates(options.high_precision)
