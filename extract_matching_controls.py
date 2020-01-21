@@ -2,13 +2,22 @@ import argparse
 import json
 from multiprocessing import Manager
 from multiprocessing.pool import Pool
+from tqdm import tqdm
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 from preprocess_tweets import Patterns
+from terms_sentiment import TermSentiment
 
 user_id_to_matching_controls = {}
+
+
+SCHIZO_WORDS = ["schizophrenia", "schizophrenic", "paranoid schizophrenia", "paranoid schizophrenic", "schiizophrenia",
+                "schitzo", "schitzophrenia", "schizo", "schizofrenia", "schizophernia", "schizophren", "schizophrene",
+                "schizophrenia", "schizophrenia disorder", "schizophreniak", "schizophrenic", "schizophrenic dis",
+                "schizophrenic disorder", "schizophrenic narcissism", "schyzophrenia", "scizophrenia", "shizophrenia",
+                "shizophrenic", "skitsafrantic", "skitzafrenic", "skitzophrenia", "unspecified schizophrenia"]
 
 
 def insert_user_to_output_json(user_id, label, posts, out_json):
@@ -36,8 +45,11 @@ def get_posts(*args):
     index, (user_id, user_history) = args[0]
     user_posts = [p[1] for p in user_history["posts"]]
     user_preprocessed_posts = [Patterns.preprocess(post) for post in user_posts]
-    group_dict[index] = (user_id, user_preprocessed_posts)
-    posts.append('\n'.join([p.strip() for p in user_preprocessed_posts]))
+    sentiment = TermSentiment()
+    user_preprocessed_filtered_posts = [post for post in user_preprocessed_posts
+                                        if not sentiment.contains_positive_terms(post) and post not in SCHIZO_WORDS]
+    group_dict[index] = (user_id, user_preprocessed_filtered_posts)
+    posts.append('\n'.join([p.strip() for p in user_preprocessed_filtered_posts]))
 
 
 def read_group_posts(history_files, group_dict):
@@ -49,14 +61,32 @@ def read_group_posts(history_files, group_dict):
     :return: List of lists representing a list of user posts
     """
     posts = manager.list()
-    pool = Pool(processes=n_processes, initializer=init, initargs=(posts, group_dict))
+
+    def update(*args):
+        pbar.update()
 
     for hist_file in history_files:
         with open(hist_file) as f:
             hist = json.load(f)
-        pool.map(get_posts, enumerate(hist.items()))
-    pool.close()
+        pool = Pool(processes=3, initializer=init, initargs=(posts, group_dict))
+        pbar = tqdm(enumerate(hist.items()), total=len(hist.items()), leave=False, desc='Reading {}'.format(hist_file))
+        for item in enumerate(hist.items()):
+            pool.apply_async(get_posts, args=(item,), callback=update)
+        pool.close()
+        pool.join()
+        pbar.close()
     return posts
+
+
+def get_similar_controls(schizo_ind, schizo_vec):
+    similarities = cosine_similarity(schizo_vec, tfidf_controls)
+    sorted_similarities = similarities[0].argsort()[:-args.matching_controls_cnt-1: -1]
+    # todo: filter by a minimum cosine score and delete schizos with not enough controls
+    sorted_controls_posts = [controls_dict[ind] for ind in sorted_similarities]
+    schizo_user = schizos_dict[schizo_ind]
+    insert_user_to_output_json(schizo_user[0], 'schizophrenia', schizo_user[1], output_json)
+    [insert_user_to_output_json(control_user[0], 'control', control_user[1], output_json)
+     for control_user in sorted_controls_posts]
 
 
 if __name__ == "__main__":
@@ -89,16 +119,10 @@ if __name__ == "__main__":
     output_json = {}
 
     # cosine_similarity(tfidf_schizos, tfidf_controls)
-    for schizo_ind, schizo_vec in enumerate(tfidf_schizos):
-        similarities = cosine_similarity(schizo_vec, tfidf_controls)
-        sorted_similarities = similarities[0].argsort()[:-args.matching_controls_cnt: -1]
-        # todo: filter by a minimum cosine score and delete schizos with not enough controls
-        # todo: filter out schizophrenics posts containing negative words
-        sorted_controls_posts = [controls_dict[ind] for ind in sorted_similarities]
-        schizo_user = schizos_dict[schizo_ind]
-        insert_user_to_output_json(schizo_user[0], 'schizophrenia', schizo_user[1], output_json)
-        [insert_user_to_output_json(control_user[0], 'control', control_user[1], output_json)
-         for control_user in sorted_controls_posts]
+    for schizo_ind, schizo_vec in tqdm(enumerate(tfidf_schizos), total=tfidf_schizos.shape[0], leave=False,
+                                       desc='Finding similar controls for schizophrenics'):
+    # for schizo_ind, schizo_vec in enumerate(tfidf_schizos):
+        get_similar_controls(schizo_ind, schizo_vec)
 
     with open("tssd.json", 'w', encoding='utf-8') as out:
         json.dump(output_json, out)
