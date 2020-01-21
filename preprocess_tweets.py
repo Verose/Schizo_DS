@@ -92,4 +92,4 @@ class Patterns:
         return tweet_string
 
 
-print(Patterns.preprocess("bla/bla (he:he) https://bla test :) numbers 1948 so.another test. lol,    bla. fin!"))
+# print(Patterns.preprocess("bla/bla (he:he) https://bla test :) numbers 1948 so.another test. lol,    bla. fin!"))
