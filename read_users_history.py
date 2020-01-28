@@ -179,7 +179,7 @@ class UserTweetFetcher:
                 self._users_tweets[user_id]['posts'].append((created_at, tweet_text))
             self._users_tweets[user_id]['hashtags'].extend(hashtags)
 
-        print('Finished with user {} with {} tweets'.format(user_id, len(self._users_tweets[user_id]['posts'])))
+        print('Finished with user {}'.format(user_id))
         self._users_written += 1
 
         if self._users_written % 200 == 0:
